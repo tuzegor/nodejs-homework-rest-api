@@ -1,7 +1,7 @@
 const express = require("express");
 const {
   listContacts,
-  // getContactById,
+  getContactById,
   // removeContact,
   // addContact,
   // updateContact,
@@ -22,7 +22,25 @@ router.get("/", async (req, res, next) => {
 });
 
 router.get("/:contactId", async (req, res, next) => {
-  res.json({ message: "template message" });
+  const { contactId } = req.params;
+  console.log(contactId);
+  const contact = await getContactById(contactId);
+  console.table(contact);
+
+  if (!contact) {
+    res.status(404).json({
+      status: "error",
+      code: 404,
+      message: `Contact with ${contactId} not found`,
+    });
+  }
+
+  res.json({
+    status: "success",
+    code: 200,
+    message: "success get request",
+    data: { result: contact },
+  });
 });
 
 router.post("/", async (req, res, next) => {
