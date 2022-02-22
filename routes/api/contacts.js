@@ -82,7 +82,8 @@ router.delete("/:contactId", async (req, res, next) => {
 
 router.put("/:contactId", async (req, res, next) => {
   const { contactId } = req.params;
-  if (!req.body) {
+  console.log(req.body);
+  if (!req.body.name && !req.body.email && !req.body.phone) {
     res.json({
       status: "error",
       code: 400,
