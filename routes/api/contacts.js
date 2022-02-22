@@ -82,14 +82,31 @@ router.delete("/:contactId", async (req, res, next) => {
 
 router.put("/:contactId", async (req, res, next) => {
   const { contactId } = req.params;
-  const contact = await updateContact(contactId, req.body);
+  if (!req.body) {
+    res.json({
+      status: "error",
+      code: 400,
+      message: "missing fields",
+    });
+  }
+  if (req.body) {
+    const contact = await updateContact(contactId, req.body);
 
-  res.json({
-    status: "success",
-    code: 200,
-    message: "success, contact update",
-    data: { result: contact },
-  });
+    if (!contact) {
+      res.json({
+        status: "success",
+        code: 200,
+        message: `Not found contact with id: ${contactId}`,
+      });
+    }
+
+    res.json({
+      status: "success",
+      code: 200,
+      message: "success, contact update",
+      data: { result: contact },
+    });
+  }
 });
 
 module.exports = router;
