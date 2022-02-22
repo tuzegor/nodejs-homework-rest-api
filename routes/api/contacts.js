@@ -3,8 +3,8 @@ const {
   listContacts,
   getContactById,
   removeContact,
-  // addContact,
-  // updateContact,
+  addContact,
+  updateContact,
 } = require("../../models/contacts");
 
 const router = express.Router();
@@ -41,7 +41,23 @@ router.get("/:contactId", async (req, res, next) => {
 });
 
 router.post("/", async (req, res, next) => {
-  res.json({ message: "template message" });
+  console.log(req.body);
+  const contact = await addContact(req.body);
+
+  // if (!req.body.hasOwnProperty('name')) {
+  //   res.status(404).json({
+  //     status: "error",
+  //     code: 404,
+  //     message: "missing required name field",
+  //   });
+  // }
+
+  res.json({
+    status: "success",
+    code: 201,
+    message: "success, contact added",
+    data: { result: contact },
+  });
 });
 
 router.delete("/:contactId", async (req, res, next) => {
@@ -59,13 +75,21 @@ router.delete("/:contactId", async (req, res, next) => {
   res.json({
     status: "success",
     code: 200,
-    message: "success delete by id request",
+    message: "contact deleted",
     data: { result: contact },
   });
 });
 
 router.put("/:contactId", async (req, res, next) => {
-  res.json({ message: "template message" });
+  const { contactId } = req.params;
+  const contact = await updateContact(contactId, req.body);
+
+  res.json({
+    status: "success",
+    code: 200,
+    message: "success, contact update",
+    data: { result: contact },
+  });
 });
 
 module.exports = router;
