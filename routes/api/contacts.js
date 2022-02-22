@@ -12,7 +12,7 @@ const router = express.Router();
 router.get("/", async (req, res, next) => {
   const contacts = await listContacts();
 
-  res.json({
+  return res.json({
     status: "success",
     code: 200,
     message: "success get request",
@@ -25,14 +25,14 @@ router.get("/:contactId", async (req, res, next) => {
   const contact = await getContactById(contactId);
 
   if (!contact) {
-    res.status(404).json({
+    return res.status(404).json({
       status: "error",
       code: 404,
       message: `Contact with id:${contactId} not found`,
     });
   }
 
-  res.json({
+  return res.json({
     status: "success",
     code: 200,
     message: "success get by id request",
@@ -44,15 +44,15 @@ router.post("/", async (req, res, next) => {
   console.log(req.body);
   const contact = await addContact(req.body);
 
-  // if (!req.body.hasOwnProperty('name')) {
-  //   res.status(404).json({
-  //     status: "error",
-  //     code: 404,
-  //     message: "missing required name field",
-  //   });
-  // }
+  if (!req.body.name && !req.body.email && !req.body.phone) {
+    return res.json({
+      status: "error",
+      code: 400,
+      message: "missing fields",
+    });
+  }
 
-  res.json({
+  return res.json({
     status: "success",
     code: 201,
     message: "success, contact added",
@@ -65,14 +65,14 @@ router.delete("/:contactId", async (req, res, next) => {
   const contact = await removeContact(contactId);
 
   if (!contact) {
-    res.status(404).json({
+    return res.status(404).json({
       status: "error",
       code: 404,
       message: `Contact with id:${contactId} not found`,
     });
   }
 
-  res.json({
+  return res.json({
     status: "success",
     code: 200,
     message: "contact deleted",
@@ -82,32 +82,31 @@ router.delete("/:contactId", async (req, res, next) => {
 
 router.put("/:contactId", async (req, res, next) => {
   const { contactId } = req.params;
-  console.log(req.body);
+
   if (!req.body.name && !req.body.email && !req.body.phone) {
-    res.json({
+    return res.json({
       status: "error",
       code: 400,
       message: "missing fields",
     });
   }
-  if (req.body) {
-    const contact = await updateContact(contactId, req.body);
 
-    if (!contact) {
-      res.json({
-        status: "success",
-        code: 200,
-        message: `Not found contact with id: ${contactId}`,
-      });
-    }
+  const contact = await updateContact(contactId, req.body);
 
-    res.json({
+  if (!contact) {
+    return res.json({
       status: "success",
       code: 200,
-      message: "success, contact update",
-      data: { result: contact },
+      message: `Not found contact with id: ${contactId}`,
     });
   }
+
+  return res.json({
+    status: "success",
+    code: 200,
+    message: "success, contact update",
+    data: { result: contact },
+  });
 });
 
 module.exports = router;
