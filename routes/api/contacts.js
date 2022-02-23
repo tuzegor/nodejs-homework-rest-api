@@ -6,6 +6,11 @@ const {
   addContact,
   updateContact,
 } = require("../../models/contacts");
+const {
+  schemaCreateContact,
+  schemaUpdateContact,
+  validateBody,
+} = require("./validation");
 
 const router = express.Router();
 
@@ -40,19 +45,19 @@ router.get("/:contactId", async (req, res, next) => {
   });
 });
 
-router.post("/", async (req, res, next) => {
+router.post("/", validateBody(schemaCreateContact), async (req, res, next) => {
   console.log(req.body);
   const contact = await addContact(req.body);
 
   if (!req.body.name && !req.body.email && !req.body.phone) {
-    return res.json({
+    return res.status(400).json({
       status: "error",
       code: 400,
       message: "missing fields",
     });
   }
 
-  return res.json({
+  return res.status(201).json({
     status: "success",
     code: 201,
     message: "success, contact added",
@@ -80,33 +85,37 @@ router.delete("/:contactId", async (req, res, next) => {
   });
 });
 
-router.put("/:contactId", async (req, res, next) => {
-  const { contactId } = req.params;
+router.put(
+  "/:contactId",
+  validateBody(schemaUpdateContact),
+  async (req, res, next) => {
+    const { contactId } = req.params;
 
-  if (!req.body.name && !req.body.email && !req.body.phone) {
-    return res.json({
-      status: "error",
-      code: 400,
-      message: "missing fields",
-    });
-  }
+    if (!req.body.name && !req.body.email && !req.body.phone) {
+      return res.status(400).json({
+        status: "error",
+        code: 400,
+        message: "missing fields",
+      });
+    }
 
-  const contact = await updateContact(contactId, req.body);
+    const contact = await updateContact(contactId, req.body);
 
-  if (!contact) {
+    if (!contact) {
+      return res.json({
+        status: "success",
+        code: 200,
+        message: `Not found contact with id: ${contactId}`,
+      });
+    }
+
     return res.json({
       status: "success",
       code: 200,
-      message: `Not found contact with id: ${contactId}`,
+      message: "success, contact update",
+      data: { result: contact },
     });
   }
-
-  return res.json({
-    status: "success",
-    code: 200,
-    message: "success, contact update",
-    data: { result: contact },
-  });
-});
+);
 
 module.exports = router;
